@@ -15,14 +15,11 @@
 				<h1>{{ message }}</h1>
 				<input class="new-todo" placeholder="What needs to be done?" v-on:keydown.enter="addToDoKeyDown" autofocus>
 			</header>
-			<!-- This section should be hidden by default and shown when there are todos -->
 			<section class="main">
 				<input id="toggle-all" class="toggle-all" type="checkbox" v-model="toggleAll">
 				<label for="toggle-all">Mark all as complete</label>
 				<ul class="todo-list">
-					<!-- These are here just to show the structure of the list items -->
-					<!-- List items should get the class `editing` when editing and `completed` when marked as completed -->
-					<li v-for="(todo, index) in filterTodos" v-bind:class="{completed: todo.completed, editing: (editingId === todo.id)}">
+					<li v-for="(todo, index) in filteredTodos" v-bind:class="{completed: todo.completed, editing: (editingId === todo.id)}">
 						<div class="view">
 							<input class="toggle" type="checkbox" v-model="todo.completed">
 							<label v-on:dblclick="edit(todo.id)">{{ todo.thing }}</label>
@@ -39,7 +36,7 @@
 				<!-- Remove this if you don't implement routing -->
 				<ul class="filters">
 					<li>
-						<a href="#/" v-bind:class="{ selected: filterText === '' }">All</a>
+						<a href="#/" v-bind:class="{ selected: filterText === 'all' }">All</a>
 					</li>
 					<li>
 						<a href="#/active" v-bind:class="{ selected: filterText === 'active' }">Active</a>

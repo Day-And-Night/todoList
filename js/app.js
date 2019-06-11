@@ -1,29 +1,28 @@
 ;(function(){
-	todos = [
-		{
-			id: 1,
-			thing: 'lol',
-			completed: false
+	var filters = {
+		all: function (todos) {
+			return todos;
 		},
-		{
-			id: 2,
-			thing: 'dota',
-			completed: false
+		active: function (todos) {
+			return todos.filter(function (todo) {
+				return !todo.completed;
+			});
 		},
-		{
-			id: 3,
-			thing: 'ow',
-			completed: true
-		}	
-	];
-	
+		completed: function (todos) {
+			return todos.filter(function (todo) {
+				return todo.completed;
+			});
+		}
+	};
+
+	var todos = JSON.parse(window.localStorage.getItem('todos'));
 	var app = new Vue({
-		el: "#app",
+		el: '#app',
 		data: {
-			message: "todolist",
+			message: 'todolist',
 			todos,
 			editingId: 0,
-			filterText: ""
+			filterText: 'all'
 		},
 		methods: {
 			addToDoKeyDown (e) {
@@ -34,7 +33,9 @@
 					thing: value,
 					completed: false
 				});
-				e.target.value = "";
+				e.target.value = '';
+
+				window.localStorage.setItem('todos', JSON.stringify(todos));
 			},
 
 			deleteOne (index) {
@@ -51,7 +52,7 @@
 				//如果输入为空，直接删除数据
 				this.todos[index].thing = e.target.value;
 				this.editingId = 0;
-				if (e.target.value === "") {
+				if (e.target.value === '') {
 					this.todos.splice(index,1);
 				}
 			},
@@ -70,6 +71,14 @@
 				}
 			}
 		},
+		watch: {
+			todos: {
+				handler: function(){
+					window.localStorage.setItem('todos', JSON.stringify(this.todos));
+				},
+				deep: true       //深度监视，一般用于对象的监视
+			}
+		},
 		computed: {                  
 			//计算属性类似于函数，但计算出值后直接调用值，不会重复调用函数（修改数据除外）
 		    allLeftThings: function () {
@@ -86,7 +95,10 @@
 		    	//这里运用get检测是否todo全部完成，实现toggle-all的切换
 		    	//用set监听toggle-all的切换,改变todo样式
 		    	get(){
-		    		return this.todos.every(t => t.completed);
+		    		if (this.todos !== null) {
+		    			return this.todos.every(t => t.completed);
+		    		}
+		    		return null;
 		    	},
 		    	set(){
 		    		let check = !this.toggleAll;
@@ -95,26 +107,17 @@
 		    		}
 		    	}
 		    },
-			filterTodos: function () {
-				if (this.filterText === "") {
-					return this.todos;
-				} else if (this.filterText === "active") {
-					let newTodos = this.todos.filter(function(todo) {
-						return !todo.completed;
-					}); 
-					return newTodos; 
-				} else {
-					let newTodos = this.todos.filter(function(todo) {
-						return todo.completed;
-					}); 
-					return newTodos; 
-				}
-			}
+			filteredTodos: function () {
+				return filters[this.filterText](this.todos);
+			},
 	    }
 	});
-
 	window.onhashchange = function () {
-		app.filterText = window.location.hash.substr(2);
+		if (window.location.hash.substr(2) == '') {
+			app.filterText = 'all';
+		} else {
+			app.filterText = window.location.hash.substr(2);
+		}
 	}
 
 })()
